@@ -1,32 +1,44 @@
 #
 # Conditional build:
 %bcond_without	doc		# Sphinx documentation
-%bcond_without	tests		# unit tests and benchmarks (any)
+%bcond_without	tests		# unit tests (and possibly benchmarks)
+%bcond_with	benchmarks	# benchmarks
 
+%if %{without tests}
+%undefine	with_benchmarks
+%endif
 %define 	module	greenlet
 Summary:	Lightweight in-process concurrent programming
 Summary(pl.UTF-8):	Lekkie programowanie równoległe wewnątrz procesu
 Name:		python3-%{module}
-Version:	3.1.1
+Version:	3.2.3
 Release:	1
 License:	MIT, PSF (Stackless Python parts)
 Group:		Libraries/Python
 #Source0Download: https://pypi.org/simple/greenlet/
 Source0:	https://files.pythonhosted.org/packages/source/g/greenlet/%{module}-%{version}.tar.gz
-# Source0-md5:	13a71396abdf249280fa25d258acf435
+# Source0-md5:	7ad06c6e1f5e16908aa8bbc713531b78
 URL:		https://pypi.org/project/greenlet/
+BuildRequires:	python3-devel >= 1:3.9
+BuildRequires:	python3-setuptools >= 1:40.8.0
+BuildRequires:	python3-modules >= 1:3.9
+%if %{with tests}
+BuildRequires:	python3-objgraph
+BuildRequires:	python3-psutil
+%endif
+%if %{with benchmarks}
+BuildRequires:	python3-pyperf
+%endif
 BuildRequires:	rpm-build >= 4.6
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.714
-BuildRequires:	python3-devel >= 1:3.5
-BuildRequires:	python3-setuptools
-BuildRequires:	python3-modules >= 1:3.5
 %if %{with doc}
+BuildRequires:	python3-furo
 # already installed
 BuildRequires:	python3-greenlet
 BuildRequires:	sphinx-pdg-3
 %endif
-Requires:	python-modules >= 1:2.7
+Requires:	python3-modules >= 1:3.9
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 # -fno-tree-dominator-opts because https://bugzilla.opensuse.org/show_bug.cgi?id=902146
@@ -50,7 +62,7 @@ Summary:	C development headers for Python 2 greenlet module
 Summary(pl.UTF-8):	Pliki nagłówkowe C dla modułu Pythona 2 greenlet
 Group:		Development/Libraries
 Requires:	%{name} = %{version}-%{release}
-Requires:	python3-devel >= 1:3.7
+Requires:	python3-devel >= 1:3.9
 
 %description devel
 This package contains header files required for C modules development.
@@ -81,10 +93,12 @@ Dokumentacja API modułu Pythona greenlet.
 BUILDDIR=$(echo $(pwd)/build-3/lib.linux-*)
 PYTHONPATH="$BUILDDIR" \
 %{__python3} -m unittest discover greenlet.tests
+%endif
 
+%if %{with benchmarks}
 # Run the upstream benchmarking suite to further exercise the code:
 PYTHONPATH="$BUILDDIR" \
-%{__python3} benchmarks-3/chain.py
+%{__python3} benchmarks/chain.py
 %endif
 
 %if %{with doc}
@@ -99,6 +113,7 @@ rm -rf $RPM_BUILD_ROOT
 %py3_install
 
 %{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/greenlet/*.[ch]
+%{__rm} $RPM_BUILD_ROOT%{py3_sitedir}/greenlet/*.[ch]pp
 %{__rm} -r $RPM_BUILD_ROOT%{py3_sitedir}/greenlet/{platform,tests}
 
 %clean
@@ -106,7 +121,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc AUTHORS CHANGES.rst LICENSE README.rst %{?with_tests:benchmarks-3}
+%doc AUTHORS CHANGES.rst LICENSE README.rst
 %dir %{py3_sitedir}/greenlet
 %attr(755,root,root) %{py3_sitedir}/greenlet/_greenlet.cpython-*.so
 %{py3_sitedir}/greenlet/*.py
