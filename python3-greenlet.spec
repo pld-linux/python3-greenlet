@@ -11,13 +11,13 @@
 Summary:	Lightweight in-process concurrent programming
 Summary(pl.UTF-8):	Lekkie programowanie równoległe wewnątrz procesu
 Name:		python3-%{module}
-Version:	3.4.0
+Version:	3.5.6
 Release:	1
 License:	MIT, PSF (Stackless Python parts)
 Group:		Libraries/Python
 #Source0Download: https://pypi.org/simple/greenlet/
 Source0:	https://files.pythonhosted.org/packages/source/g/greenlet/%{module}-%{version}.tar.gz
-# Source0-md5:	eac22be0d3d1e432a6d08217f28c6d37
+# Source0-md5:	334c931cef75cc40f6b7a81f7b50f0f0
 URL:		https://pypi.org/project/greenlet/
 BuildRequires:	python3-devel >= 1:3.10
 BuildRequires:	python3-setuptools >= 1:77.0.3
